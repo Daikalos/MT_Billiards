@@ -28,57 +28,72 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.BilliardTable = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.ButtonStart = new System.Windows.Forms.Button();
-            this.ButtonRestart = new System.Windows.Forms.Button();
+            this.PnlBilliardTable = new System.Windows.Forms.Panel();
+            this.PnlGame = new System.Windows.Forms.Panel();
+            this.lblGameStatus = new System.Windows.Forms.Label();
+            this.BtnStart = new System.Windows.Forms.Button();
+            this.BtnRestart = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.LabelTime = new System.Windows.Forms.Label();
-            this.LabelPoints = new System.Windows.Forms.Label();
-            this.LabelHits = new System.Windows.Forms.Label();
-            this.BilliardTable.SuspendLayout();
+            this.LblTime = new System.Windows.Forms.Label();
+            this.LblPoints = new System.Windows.Forms.Label();
+            this.LblHits = new System.Windows.Forms.Label();
+            this.PnlBilliardTable.SuspendLayout();
             this.SuspendLayout();
             // 
-            // BilliardTable
+            // PnlBilliardTable
             // 
-            this.BilliardTable.BackgroundImage = global::Multithreading_06.Properties.Resources.billiardTable;
-            this.BilliardTable.Controls.Add(this.panel1);
-            this.BilliardTable.Location = new System.Drawing.Point(0, 36);
-            this.BilliardTable.Name = "BilliardTable";
-            this.BilliardTable.Size = new System.Drawing.Size(1024, 512);
-            this.BilliardTable.TabIndex = 0;
+            this.PnlBilliardTable.BackgroundImage = global::Multithreading_06.Properties.Resources.billiardTable;
+            this.PnlBilliardTable.Controls.Add(this.PnlGame);
+            this.PnlBilliardTable.Location = new System.Drawing.Point(0, 36);
+            this.PnlBilliardTable.Name = "PnlBilliardTable";
+            this.PnlBilliardTable.Size = new System.Drawing.Size(1024, 512);
+            this.PnlBilliardTable.TabIndex = 0;
             // 
-            // panel1
+            // PnlGame
             // 
-            this.panel1.BackColor = System.Drawing.Color.Transparent;
-            this.panel1.Location = new System.Drawing.Point(35, 35);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(954, 442);
-            this.panel1.TabIndex = 0;
+            this.PnlGame.BackColor = System.Drawing.Color.Transparent;
+            this.PnlGame.Location = new System.Drawing.Point(37, 37);
+            this.PnlGame.Name = "PnlGame";
+            this.PnlGame.Size = new System.Drawing.Size(951, 439);
+            this.PnlGame.TabIndex = 0;
+            this.PnlGame.Click += new System.EventHandler(this.PnlGame_Click);
+            this.PnlGame.Paint += new System.Windows.Forms.PaintEventHandler(this.PnlGame_Paint);
             // 
-            // ButtonStart
+            // lblGameStatus
             // 
-            this.ButtonStart.BackColor = System.Drawing.Color.SaddleBrown;
-            this.ButtonStart.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ButtonStart.Location = new System.Drawing.Point(12, 554);
-            this.ButtonStart.Name = "ButtonStart";
-            this.ButtonStart.Size = new System.Drawing.Size(165, 47);
-            this.ButtonStart.TabIndex = 1;
-            this.ButtonStart.Text = "Start";
-            this.ButtonStart.UseVisualStyleBackColor = false;
+            this.lblGameStatus.AutoSize = true;
+            this.lblGameStatus.BackColor = System.Drawing.Color.Transparent;
+            this.lblGameStatus.Font = new System.Drawing.Font("Stencil", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblGameStatus.ForeColor = System.Drawing.Color.Black;
+            this.lblGameStatus.Location = new System.Drawing.Point(877, 4);
+            this.lblGameStatus.Name = "lblGameStatus";
+            this.lblGameStatus.Size = new System.Drawing.Size(135, 32);
+            this.lblGameStatus.TabIndex = 9;
+            this.lblGameStatus.Text = "YOU LOSE";
             // 
-            // ButtonRestart
+            // BtnStart
             // 
-            this.ButtonRestart.BackColor = System.Drawing.Color.SaddleBrown;
-            this.ButtonRestart.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ButtonRestart.Location = new System.Drawing.Point(183, 554);
-            this.ButtonRestart.Name = "ButtonRestart";
-            this.ButtonRestart.Size = new System.Drawing.Size(165, 47);
-            this.ButtonRestart.TabIndex = 2;
-            this.ButtonRestart.Text = "Restart";
-            this.ButtonRestart.UseVisualStyleBackColor = false;
+            this.BtnStart.BackColor = System.Drawing.Color.SaddleBrown;
+            this.BtnStart.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnStart.Location = new System.Drawing.Point(12, 554);
+            this.BtnStart.Name = "BtnStart";
+            this.BtnStart.Size = new System.Drawing.Size(165, 47);
+            this.BtnStart.TabIndex = 1;
+            this.BtnStart.Text = "Start";
+            this.BtnStart.UseVisualStyleBackColor = false;
+            // 
+            // BtnRestart
+            // 
+            this.BtnRestart.BackColor = System.Drawing.Color.SaddleBrown;
+            this.BtnRestart.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnRestart.Location = new System.Drawing.Point(183, 554);
+            this.BtnRestart.Name = "BtnRestart";
+            this.BtnRestart.Size = new System.Drawing.Size(165, 47);
+            this.BtnRestart.TabIndex = 2;
+            this.BtnRestart.Text = "Restart";
+            this.BtnRestart.UseVisualStyleBackColor = false;
             // 
             // label1
             // 
@@ -96,9 +111,9 @@
             this.label2.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.Location = new System.Drawing.Point(268, 9);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(60, 22);
+            this.label2.Size = new System.Drawing.Size(108, 22);
             this.label2.TabIndex = 4;
-            this.label2.Text = "Hits:";
+            this.label2.Text = "Hits Left:";
             // 
             // label3
             // 
@@ -110,37 +125,38 @@
             this.label3.TabIndex = 5;
             this.label3.Text = "Points:";
             // 
-            // LabelTime
+            // LblTime
             // 
-            this.LabelTime.AutoSize = true;
-            this.LabelTime.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelTime.Location = new System.Drawing.Point(74, 9);
-            this.LabelTime.Name = "LabelTime";
-            this.LabelTime.Size = new System.Drawing.Size(60, 22);
-            this.LabelTime.TabIndex = 6;
-            this.LabelTime.Text = "00:00";
+            this.LblTime.AutoSize = true;
+            this.LblTime.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTime.Location = new System.Drawing.Point(74, 9);
+            this.LblTime.Name = "LblTime";
+            this.LblTime.Size = new System.Drawing.Size(60, 22);
+            this.LblTime.TabIndex = 6;
+            this.LblTime.Text = "00:00";
             // 
-            // LabelPoints
+            // LblPoints
             // 
-            this.LabelPoints.AutoSize = true;
-            this.LabelPoints.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelPoints.Location = new System.Drawing.Point(226, 9);
-            this.LabelPoints.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
-            this.LabelPoints.Name = "LabelPoints";
-            this.LabelPoints.Size = new System.Drawing.Size(21, 22);
-            this.LabelPoints.TabIndex = 7;
-            this.LabelPoints.Text = "0";
+            this.LblPoints.AutoSize = true;
+            this.LblPoints.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblPoints.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.LblPoints.Location = new System.Drawing.Point(226, 9);
+            this.LblPoints.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
+            this.LblPoints.Name = "LblPoints";
+            this.LblPoints.Size = new System.Drawing.Size(21, 22);
+            this.LblPoints.TabIndex = 7;
+            this.LblPoints.Text = "0";
             // 
-            // LabelHits
+            // LblHits
             // 
-            this.LabelHits.AutoSize = true;
-            this.LabelHits.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelHits.Location = new System.Drawing.Point(327, 9);
-            this.LabelHits.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
-            this.LabelHits.Name = "LabelHits";
-            this.LabelHits.Size = new System.Drawing.Size(21, 22);
-            this.LabelHits.TabIndex = 8;
-            this.LabelHits.Text = "0";
+            this.LblHits.AutoSize = true;
+            this.LblHits.Font = new System.Drawing.Font("Stencil", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblHits.Location = new System.Drawing.Point(379, 9);
+            this.LblHits.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
+            this.LblHits.Name = "LblHits";
+            this.LblHits.Size = new System.Drawing.Size(21, 22);
+            this.LblHits.TabIndex = 8;
+            this.LblHits.Text = "0";
             // 
             // MainForm
             // 
@@ -148,18 +164,19 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(101)))), ((int)(((byte)(67)))), ((int)(((byte)(33)))));
             this.ClientSize = new System.Drawing.Size(1024, 609);
-            this.Controls.Add(this.LabelHits);
-            this.Controls.Add(this.LabelPoints);
-            this.Controls.Add(this.LabelTime);
+            this.Controls.Add(this.lblGameStatus);
+            this.Controls.Add(this.LblHits);
+            this.Controls.Add(this.LblPoints);
+            this.Controls.Add(this.LblTime);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.ButtonRestart);
-            this.Controls.Add(this.ButtonStart);
-            this.Controls.Add(this.BilliardTable);
+            this.Controls.Add(this.BtnRestart);
+            this.Controls.Add(this.BtnStart);
+            this.Controls.Add(this.PnlBilliardTable);
             this.Name = "MainForm";
             this.Text = "Multithreading_06";
-            this.BilliardTable.ResumeLayout(false);
+            this.PnlBilliardTable.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -167,16 +184,17 @@
 
         #endregion
 
-        private System.Windows.Forms.Panel BilliardTable;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Button ButtonStart;
-        private System.Windows.Forms.Button ButtonRestart;
+        private System.Windows.Forms.Panel PnlBilliardTable;
+        private System.Windows.Forms.Panel PnlGame;
+        private System.Windows.Forms.Button BtnStart;
+        private System.Windows.Forms.Button BtnRestart;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label LabelTime;
-        private System.Windows.Forms.Label LabelPoints;
-        private System.Windows.Forms.Label LabelHits;
+        private System.Windows.Forms.Label LblTime;
+        private System.Windows.Forms.Label LblPoints;
+        private System.Windows.Forms.Label LblHits;
+        private System.Windows.Forms.Label lblGameStatus;
     }
 }
 
