@@ -58,8 +58,9 @@
             this.PnlGame.Name = "PnlGame";
             this.PnlGame.Size = new System.Drawing.Size(951, 439);
             this.PnlGame.TabIndex = 0;
-            this.PnlGame.Click += new System.EventHandler(this.PnlGame_Click);
             this.PnlGame.Paint += new System.Windows.Forms.PaintEventHandler(this.PnlGame_Paint);
+            this.PnlGame.MouseClick += new System.Windows.Forms.MouseEventHandler(this.PnlGame_MouseClick);
+            this.PnlGame.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.PnlGame_MouseDoubleClick);
             // 
             // lblGameStatus
             // 
@@ -174,6 +175,7 @@
             this.Controls.Add(this.BtnRestart);
             this.Controls.Add(this.BtnStart);
             this.Controls.Add(this.PnlBilliardTable);
+            this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Multithreading_06";
             this.PnlBilliardTable.ResumeLayout(false);

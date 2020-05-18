@@ -18,18 +18,45 @@ namespace Multithreading_06
             }
         }
 
-        public static bool WithinBall(Ball ball, Point point)
+        public static float PointLength(PointF point)
         {
-            Point ballCenter = new Point(
-                ball.Position.X + (ball.Size.Width / 2),
-                ball.Position.Y + (ball.Size.Height / 2));
+            return (float)Math.Sqrt((Math.Pow(point.X, 2) + Math.Pow(point.Y, 2)));
+        }
+
+        public static PointF Normalize(this PointF point)
+        {
+            float distance = PointLength(point);
+            return (distance > 0.0f) ? new PointF(point.X / distance, point.Y / distance) : PointF.Empty;
+        }
+
+        public static PointF Multiply(this PointF point, Point pointToMultiplyBy)
+        {
+            return new PointF(point.X * pointToMultiplyBy.X, point.Y * pointToMultiplyBy.Y);
+        }
+
+        public static PointF MultiplyValue(this PointF point, float value)
+        {
+            return new PointF(point.X * value, point.Y * value);
+        }
+
+        public static PointF Add(this PointF point, PointF pointToAddBy)
+        {
+            return new PointF(point.X + pointToAddBy.X, point.Y + pointToAddBy.Y);
+        }
+
+        public static PointF Subtract(this PointF point, PointF pointToSubtractBy)
+        {
+            return new PointF(point.X - pointToSubtractBy.X, point.Y - pointToSubtractBy.Y);
+        }
+
+        public static bool WithinBall(Ball ball, PointF point)
+        {
+            PointF ballCenter = ball.Position;
             float ballRadians = (ball.Size.Width / 2);
 
-            float tempDistance = (float)Math.Sqrt(
-                Math.Pow(ballCenter.X - point.X, 2) +
-                Math.Pow(ballCenter.Y - point.Y, 2));
+            float distance = PointLength(ballCenter.Subtract(point));
 
-            if (tempDistance <= ballRadians)
+            if (distance <= ballRadians)
             {
                 return true;
             }
@@ -39,14 +66,10 @@ namespace Multithreading_06
 
         public static bool BallCollision(Ball firstBall, Ball secondBall)
         {
-            Point firstBallCenter = new Point(
-                firstBall.Position.X + (firstBall.Size.Width / 2),
-                firstBall.Position.Y + (firstBall.Size.Height / 2));
+            PointF firstBallCenter = firstBall.Position;
             float firstBallRadians = (firstBall.Size.Width / 2);
 
-            Point secondBallCenter = new Point(
-                secondBall.Position.X + (secondBall.Size.Width / 2),
-                secondBall.Position.Y + (secondBall.Size.Height / 2));
+            PointF secondBallCenter = secondBall.Position;
             float secondBallRadians = (secondBall.Size.Width / 2);
 
             float tempDistance = (float)Math.Sqrt(

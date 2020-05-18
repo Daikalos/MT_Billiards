@@ -28,14 +28,14 @@ namespace Multithreading_06
             for (int i = myGame.Balls.Count - 1; i >= 0; i--)
             {
                 Ball currentBall = myGame.Balls[i];
-                e.Graphics.FillEllipse(new SolidBrush(currentBall.Color), currentBall.DrawBox);
+                e.Graphics.FillEllipse(new SolidBrush(currentBall.Color), currentBall.DestinationRect);
             }
 
             if (myGame.IsMarked)
             {
                 e.Graphics.FillEllipse(new SolidBrush(Color.Black), new Rectangle(
-                    new Point(myGame.MarkPos.X - 8, myGame.MarkPos.Y - 8), 
-                    new Size(16, 16)));
+                    new Point(myGame.MarkPos.X - 3, myGame.MarkPos.Y - 3), 
+                    new Size(6, 6)));
             }
         }
 
@@ -47,9 +47,21 @@ namespace Multithreading_06
                 PnlGame, new object[] { true });
         }
 
-        private void PnlGame_Click(object sender, EventArgs e)
+        private void PnlGame_MouseClick(object sender, MouseEventArgs e)
         {
-            myGame.SelectBall(PnlGame.PointToClient(Cursor.Position));
+            if (e.Button == MouseButtons.Left)
+            {
+                myGame.SelectBall(PnlGame.PointToClient(Cursor.Position));
+            }
+            if (e.Button == MouseButtons.Right)
+            {
+                myGame.MarkDirection(PnlGame.PointToClient(Cursor.Position));
+            }
+        }
+
+        private void PnlGame_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            myGame.BilliardCueHit();
         }
     }
 }

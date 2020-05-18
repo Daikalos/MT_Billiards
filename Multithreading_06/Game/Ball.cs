@@ -13,26 +13,39 @@ namespace Multithreading_06
     {
         private Panel myPnlGame;
 
-        private Point myPosition;
+        private PointF myPosition;
+        private PointF myDestination;
+        private PointF myDirection;
+        private PointF myVelocity;
         private Size mySize;
+
         private Color myColor;
         private Color myColorNormal;
         private Color myColorSelect;
 
         private bool myIsSelected;
 
-        public Rectangle DrawBox => new Rectangle(Position.X, Position.Y, Size.Width, Size.Height);
-        public Point Position => myPosition;
+        private float mySpeed;
+        private float myCurrentSpeed;
+        private float myDamping;
+        private float myInitialDistance;
+
+        public Rectangle DestinationRect => new Rectangle((int)Position.X - (Size.Width / 2), (int)Position.Y - (Size.Height / 2), Size.Width, Size.Height);
+        public PointF Position => myPosition;
+        public PointF Velocity => myVelocity;
         public Size Size => mySize;
         public Color Color => myColor;
 
         public bool IsSelected { get => myIsSelected; set => myIsSelected = value; }
 
-        public Ball(Panel pnlGame, Point position, Size size)
+        public Ball(Panel pnlGame, PointF position, Size size, float speed)
         {
             this.myPnlGame = pnlGame;
             this.myPosition = position;
-            this.mySize = size;  
+            this.mySize = size;
+            this.mySpeed = speed;
+
+            myDamping = 0.95f;
 
             myColor = AssignRandomColor();
 
@@ -40,9 +53,58 @@ namespace Multithreading_06
             myColorSelect = Color.White;
         }
 
-        public void Update()
+        public Task Move()
         {
+            return Task.Run(() => 
+            {
+                float dampSpeed = (1.0f - (myInitialDistance - Extensions.PointLength(myDestination.Subtract(myPosition))) / myInitialDistance);
+                myCurrentSpeed = (mySpeed * dampSpeed < myCurrentSpeed) ? mySpeed * dampSpeed : myCurrentSpeed * myDamping;
 
+                myVelocity = myDirection.Normalize().MultiplyValue(myCurrentSpeed);
+                myPosition = myPosition.Add(myVelocity);
+            });
+        }
+
+        public Task WallCollision()
+        {
+            return Task.Run(() => 
+            { 
+                if (myPosition.Add(myVelocity).X - (mySize.Width / 2) < 0)
+                {
+                    myDirection = new PointF(myDirection.X * -1, myDirection.Y);
+                }
+                if (myPosition.Add(myVelocity).X + (mySize.Width / 2) > myPnlGame.Width)
+                {
+                    myDirection = new PointF(myDirection.X * -1, myDirection.Y);
+                }
+                if (myPosition.Add(myVelocity).Y - (mySize.Height / 2) < 0)
+                {
+                    myDirection = new PointF(myDirection.X, myDirection.Y * -1);
+                }
+                if (myPosition.Add(myVelocity).Y + (mySize.Height / 2) > myPnlGame.Height)
+                {
+                    myDirection = new PointF(myDirection.X, myDirection.Y * -1);
+                }
+            });
+        }
+
+        public Task BallCollision(Ball ball)
+        {
+            return Task.Run(() =>
+            {
+
+            });
+        }
+
+        public void CueHitBall(PointF destination)
+        {
+            myDestination = destination;
+            myCurrentSpeed = float.MaxValue;
+
+            myDirection = myDestination.Subtract(myPosition);
+            myVelocity = myDirection.Normalize();
+
+            myInitialDistance = Extensions.PointLength(myDirection);
         }
 
         public void SetColor()
