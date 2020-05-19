@@ -11,13 +11,16 @@ namespace Multithreading_06
 {
     class Game : ThreadObject
     {
-        private List<Ball> myBalls;
-        private Panel myPnlGame;
+        private readonly List<Ball> myBalls;
+        private readonly List<Hole> myHoles;
 
+        private Panel myPnlGame;
         private Ball mySelectedBall;
+        private GameStates myGameStates;
 
         private Point myMarkPos;
         private bool myIsMarked;
+        private bool myCanMark;
 
         private float myBallSpeed;
 
@@ -26,23 +29,33 @@ namespace Multithreading_06
         private int myHitsLeft;
 
         public List<Ball> Balls => myBalls;
+        public List<Hole> Holes => myHoles;
 
         public Point MarkPos => myMarkPos;
         public bool IsMarked => myIsMarked;
 
-        public Game(Panel pnlGame, int ballCount)
+        public Game(Panel pnlGame, GameStates gameStates, int ballCount)
         {
             this.myPnlGame = pnlGame;
             this.myBallCount = ballCount;
+            this.myGameStates = gameStates;
 
             myBalls = new List<Ball>();
+            myHoles = new List<Hole>();
+
+            myMarkPos = Point.Empty;
+            myIsMarked = false;
+            myCanMark = false;
 
             myBallSpeed = 10.0f;
 
             myPoints = 0;
-            myHitsLeft = ballCount - 1;
+            myHitsLeft = ballCount + 8;
+
+            myGameStates.SetState(GameState.GameWaiting);
 
             AddBalls();
+            AddHoles();
 
             StartThread();
         }
@@ -55,18 +68,21 @@ namespace Multithreading_06
             while (IsRunning)
             {
                 Thread.Sleep((int)((1.0f / 30.0f) * 1000));
-                
-                await Task.WhenAll(myBalls.FindAll(b => Extensions.PointLength(b.Velocity) > float.Epsilon).Select(b => b.Move()));
 
-                await Task.WhenAll(myBalls.FindAll(b => Extensions.PointLength(b.Velocity) > float.Epsilon).Select(b => b.WallCollision()));
+                await Task.WhenAll(myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon).Select(b => b.Move()));
 
                 for (int i = myBalls.Count - 1; i >= 0; i--)
                 {
-                    for (int j = 0; j < i; j++)
+                    myBalls[i].WallCollision();
+                    for (int j = i - 1; j >= 0; j--)
                     {
-                        if (Extensions.BallCollision(myBalls[i], myBalls[j]))
+                        BallCollision(myBalls[i], myBalls[j]);
+                    }
+                    for (int j = 0; j < myHoles.Count; j++)
+                    {
+                        if (HoleCollision(myBalls[i], myHoles[j]))
                         {
-                            
+                            break;
                         }
                     }
                 }
@@ -76,7 +92,14 @@ namespace Multithreading_06
                     //Refresh panel to show latest update
                     myPnlGame.Refresh();
                 });
+
+                MainForm.Form.UpdateHitsLeftLabel(myHitsLeft);
+                MainForm.Form.UpdatePointsLabel(myPoints);
+
+                StateCheck();
             }
+
+            ClearGame();
         }
 
         public void SelectBall(Point mousePosition)
@@ -103,7 +126,6 @@ namespace Multithreading_06
                 }
             }
         }
-
         public void MarkDirection(Point mousePosition)
         {
             if (mySelectedBall != null)
@@ -115,25 +137,151 @@ namespace Multithreading_06
                 }
             }
         }
-
         public void BilliardCueHit()
         {
             if (mySelectedBall != null)
             {
-                mySelectedBall.CueHitBall(myMarkPos);
+                if (!Extensions.WithinBall(mySelectedBall, myMarkPos))
+                {
+                    if (myIsMarked && myGameStates.GameState == GameState.GameWaiting)
+                    {
+                        myHitsLeft -= 20;
+                        mySelectedBall.CueHitBall(myMarkPos);
+
+                        myMarkPos = Point.Empty;
+                        myIsMarked = false;
+                    }
+                }
             }
+        }
+
+        private void BallCollision(Ball firstBall, Ball secondBall)
+        {
+            if (firstBall != secondBall)
+            {
+                if (Extensions.CheckBallCollision(firstBall, secondBall) && (!firstBall.IsCollisionBall && !secondBall.IsCollisionBall))
+                {
+                    PointF dirFirstToSecond = firstBall.Position.Subtract(secondBall.Position).Normalize();
+                    PointF dirSecondToFirst = secondBall.Position.Subtract(firstBall.Position).Normalize();
+
+                    PointF velFirstToSecond = dirFirstToSecond.MultiplyValue(Extensions.Length(secondBall.Velocity));
+                    PointF velSecondToFirst = dirSecondToFirst.MultiplyValue(Extensions.Length(firstBall.Velocity));
+
+                    firstBall.Velocity = velFirstToSecond;
+                    secondBall.Velocity = velSecondToFirst;
+
+                    firstBall.IsCollisionBall = true;
+                    secondBall.IsCollisionBall = true;
+
+                    firstBall.IsCollisionCue = false;
+                    secondBall.IsCollisionCue = false;
+                }
+                if (!Extensions.CheckBallCollision(firstBall, secondBall) && (firstBall.IsCollisionBall && secondBall.IsCollisionBall))
+                {
+                    firstBall.IsCollisionBall = false;
+                    secondBall.IsCollisionBall = false;
+                }
+            }
+        }
+        private bool HoleCollision(Ball ball, Hole hole)
+        {
+            if (Extensions.CheckHoleCollision(ball, hole))
+            {
+                myPoints++;
+                myBalls.Remove(ball);
+
+                return true;
+            }
+            return false;
         }
 
         private void AddBalls()
         {
-            for (int i = 0; i < myBallCount; i++)
+            for (int i = 0; i < myBallCount;)
             {
-                myBalls.Add(new Ball(myPnlGame,
-                    new Point(
+                PointF spawnPos = new PointF(
                         16 + StaticRandom.RandomNumber(0, myPnlGame.Width - 32),
-                        16 + StaticRandom.RandomNumber(0, myPnlGame.Height - 32)),
-                    new Size(32, 32), myBallSpeed));
+                        16 + StaticRandom.RandomNumber(0, myPnlGame.Height - 32));
+
+                bool canSpawn = true;
+                for (int j = 0; j < myBalls.Count; j++)
+                {
+                    if (Extensions.Length(spawnPos.Subtract(myBalls[j].Position)) < 32)
+                    {
+                        canSpawn = false;
+                    }
+                }
+
+                if (canSpawn)
+                {
+                    myBalls.Add(new Ball(myPnlGame, spawnPos, new Size(32, 32), myBallSpeed));
+                    i++;
+                }
             }
+        }     
+        private void AddHoles()
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                PointF position = new PointF(
+                    ((i % 3) * (myPnlGame.Width / 2)),
+                    ((i / 3) * (myPnlGame.Height)));
+
+                if (i % 3 != 1)
+                {
+                    myHoles.Add(new Hole(myPnlGame, position,
+                        new Size(32, 32)));
+                }
+                else
+                {
+                    myHoles.Add(new Hole(myPnlGame, position,
+                        new Size(16, 16)));
+                }
+            }
+        }
+
+        private void StateCheck()
+        {
+            if (myBalls.Any(b => Extensions.Length(b.Velocity) > float.Epsilon))
+            {
+                myGameStates.SetState(GameState.GameActive);
+            }
+            else
+            {
+                myGameStates.SetState(GameState.GameWaiting);
+            }
+
+            if (myGameStates.GameState == GameState.GameWaiting)
+            {
+                if (myBalls.Count == 0)
+                {
+                    myGameStates.SetState(GameState.GameWin);
+                }
+
+                if (myHitsLeft <= 0)
+                {
+                    myGameStates.SetState(GameState.GameOver);
+                }
+            }
+
+            if (myGameStates.GameState == GameState.GameOver || myGameStates.GameState == GameState.GameWin)
+            {
+                Thread.Sleep(3000);
+
+                myGameStates.SetState(GameState.GameIdle);
+                IsRunning = false;
+            }
+        }
+        private void ClearGame()
+        {
+            myBalls.Clear();
+            myPnlGame.InvokeIfRequired(() =>
+            {
+                //Refresh panel to show latest update
+                myPnlGame.Refresh();
+            });
+
+            MainForm.Form.Restart();
         }
     }
 }

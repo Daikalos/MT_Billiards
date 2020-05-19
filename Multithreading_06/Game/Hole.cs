@@ -12,10 +12,14 @@ namespace Multithreading_06
     {
         private Panel myPnlGame;
 
-        private Point myPosition;
+        private PointF myPosition;
         private Size mySize;
 
-        public Hole(Panel pnlGame, Point position, Size size)
+        public Rectangle DestinationRect => new Rectangle((int)Position.X - (Size.Width / 2), (int)Position.Y - (Size.Height / 2), Size.Width, Size.Height);
+        public PointF Position => myPosition;
+        public Size Size => mySize;
+
+        public Hole(Panel pnlGame, PointF position, Size size)
         {
             this.myPnlGame = pnlGame;
             this.myPosition = position;

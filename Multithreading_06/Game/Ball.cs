@@ -14,9 +14,9 @@ namespace Multithreading_06
         private Panel myPnlGame;
 
         private PointF myPosition;
-        private PointF myDestination;
-        private PointF myDirection;
         private PointF myVelocity;
+        private PointF myMaxVelocity;
+        private PointF myDestination;
         private Size mySize;
 
         private Color myColor;
@@ -24,19 +24,23 @@ namespace Multithreading_06
         private Color myColorSelect;
 
         private bool myIsSelected;
+        private bool myIsCollisionBall;
+        private bool myIsCollisionCue;
 
         private float mySpeed;
-        private float myCurrentSpeed;
         private float myDamping;
+        private float myVelocityMin;
         private float myInitialDistance;
 
         public Rectangle DestinationRect => new Rectangle((int)Position.X - (Size.Width / 2), (int)Position.Y - (Size.Height / 2), Size.Width, Size.Height);
         public PointF Position => myPosition;
-        public PointF Velocity => myVelocity;
+        public PointF Velocity { get => myVelocity; set => myVelocity = value; }
         public Size Size => mySize;
         public Color Color => myColor;
 
         public bool IsSelected { get => myIsSelected; set => myIsSelected = value; }
+        public bool IsCollisionBall { get => myIsCollisionBall; set => myIsCollisionBall = value; }
+        public bool IsCollisionCue { get => myIsCollisionCue; set => myIsCollisionCue = value; }
 
         public Ball(Panel pnlGame, PointF position, Size size, float speed)
         {
@@ -45,7 +49,12 @@ namespace Multithreading_06
             this.mySize = size;
             this.mySpeed = speed;
 
+            myIsSelected = false;
+            myIsCollisionBall = false;
+            myIsCollisionCue = false;
+
             myDamping = 0.95f;
+            myVelocityMin = 0.1f;
 
             myColor = AssignRandomColor();
 
@@ -57,54 +66,64 @@ namespace Multithreading_06
         {
             return Task.Run(() => 
             {
-                float dampSpeed = (1.0f - (myInitialDistance - Extensions.PointLength(myDestination.Subtract(myPosition))) / myInitialDistance);
-                myCurrentSpeed = (mySpeed * dampSpeed < myCurrentSpeed) ? mySpeed * dampSpeed : myCurrentSpeed * myDamping;
+                if (myIsCollisionCue)
+                {
+                    float dampSpeed = (1.0f - (myInitialDistance - Extensions.Length(myDestination.Subtract(myPosition))) / myInitialDistance);
+                    myVelocity = (Extensions.Length(myVelocity) > myVelocityMin) ? myMaxVelocity.MultiplyValue(dampSpeed) : PointF.Empty;
+                }
+                else
+                {
+                    myVelocity = (Extensions.Length(myVelocity) > myVelocityMin) ? myVelocity.MultiplyValue(myDamping) : PointF.Empty;
+                }
 
-                myVelocity = myDirection.Normalize().MultiplyValue(myCurrentSpeed);
                 myPosition = myPosition.Add(myVelocity);
             });
         }
 
-        public Task WallCollision()
+        public void WallCollision()
         {
-            return Task.Run(() => 
-            { 
-                if (myPosition.Add(myVelocity).X - (mySize.Width / 2) < 0)
-                {
-                    myDirection = new PointF(myDirection.X * -1, myDirection.Y);
-                }
-                if (myPosition.Add(myVelocity).X + (mySize.Width / 2) > myPnlGame.Width)
-                {
-                    myDirection = new PointF(myDirection.X * -1, myDirection.Y);
-                }
-                if (myPosition.Add(myVelocity).Y - (mySize.Height / 2) < 0)
-                {
-                    myDirection = new PointF(myDirection.X, myDirection.Y * -1);
-                }
-                if (myPosition.Add(myVelocity).Y + (mySize.Height / 2) > myPnlGame.Height)
-                {
-                    myDirection = new PointF(myDirection.X, myDirection.Y * -1);
-                }
-            });
-        }
-
-        public Task BallCollision(Ball ball)
-        {
-            return Task.Run(() =>
+            if (myPosition.Add(myVelocity).X - (mySize.Width / 2) < 0)
             {
+                myPosition.X = (mySize.Width / 2);
+                myVelocity = new PointF(myVelocity.X * -1, myVelocity.Y);
 
-            });
+                myIsCollisionCue = false;
+            }
+            if (myPosition.Add(myVelocity).X + (mySize.Width / 2) > myPnlGame.Width)
+            {
+                myPosition.X = myPnlGame.Width - (mySize.Width / 2);
+                myVelocity = new PointF(myVelocity.X * -1, myVelocity.Y);
+
+                myIsCollisionCue = false;
+            }
+            if (myPosition.Add(myVelocity).Y - (mySize.Height / 2) < 0)
+            {
+                myPosition.Y = (mySize.Height / 2);
+                myVelocity = new PointF(myVelocity.X, myVelocity.Y * -1);
+
+                myIsCollisionCue = false;
+            }
+            if (myPosition.Add(myVelocity).Y + (mySize.Height / 2) > myPnlGame.Height)
+            {
+                myPosition.Y = myPnlGame.Height - (mySize.Height / 2);
+                myVelocity = new PointF(myVelocity.X, myVelocity.Y * -1);
+
+                myIsCollisionCue = false;
+            }
         }
 
         public void CueHitBall(PointF destination)
         {
-            myDestination = destination;
-            myCurrentSpeed = float.MaxValue;
+            myIsCollisionCue = true;
 
-            myDirection = myDestination.Subtract(myPosition);
-            myVelocity = myDirection.Normalize();
+            PointF direction = destination.Subtract(myPosition).Normalize();
 
-            myInitialDistance = Extensions.PointLength(myDirection);
+            myDestination = direction.MultiplyValue(Extensions.Length(destination.Subtract(myPosition)).Clamp(0f, myPnlGame.Width / 2)).Add(myPosition);
+            myInitialDistance = Extensions.Length(myDestination.Subtract(myPosition));
+
+
+            myVelocity = direction.MultiplyValue(mySpeed);
+            myMaxVelocity = myVelocity;
         }
 
         public void SetColor()

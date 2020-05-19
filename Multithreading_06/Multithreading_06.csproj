@@ -51,6 +51,7 @@
     <Compile Include="Functions\ThreadObject.cs" />
     <Compile Include="Game\Ball.cs" />
     <Compile Include="Game\Game.cs" />
+    <Compile Include="Game\GameStates.cs" />
     <Compile Include="Game\Hole.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
