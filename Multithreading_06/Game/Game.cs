@@ -20,7 +20,6 @@ namespace Multithreading_06
 
         private Point myMarkPos;
         private bool myIsMarked;
-        private bool myCanMark;
 
         private float myBallSpeed;
 
@@ -45,12 +44,11 @@ namespace Multithreading_06
 
             myMarkPos = Point.Empty;
             myIsMarked = false;
-            myCanMark = false;
 
-            myBallSpeed = 10.0f;
+            myBallSpeed = 30.0f;
 
             myPoints = 0;
-            myHitsLeft = ballCount + 8;
+            myHitsLeft = ballCount + 2;
 
             myGameStates.SetState(GameState.GameWaiting);
 
@@ -69,7 +67,7 @@ namespace Multithreading_06
             {
                 Thread.Sleep((int)((1.0f / 30.0f) * 1000));
 
-                await Task.WhenAll(myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon).Select(b => b.Move()));
+                await Task.WhenAll(myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon).Select(b => b.Move()).ToArray());
 
                 for (int i = myBalls.Count - 1; i >= 0; i--)
                 {
@@ -145,7 +143,7 @@ namespace Multithreading_06
                 {
                     if (myIsMarked && myGameStates.GameState == GameState.GameWaiting)
                     {
-                        myHitsLeft -= 20;
+                        myHitsLeft--;
                         mySelectedBall.CueHitBall(myMarkPos);
 
                         myMarkPos = Point.Empty;

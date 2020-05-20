@@ -62,9 +62,9 @@ namespace Multithreading_06
             myColorSelect = Color.White;
         }
 
-        public Task Move()
+        public async Task Move()
         {
-            return Task.Run(() => 
+            await Task.Run(() => 
             {
                 if (myIsCollisionCue)
                 {

@@ -74,10 +74,10 @@ namespace Multithreading_06
 
         public static bool CheckBallCollision(Ball firstBall, Ball secondBall)
         {
-            PointF firstBallCenter = firstBall.Position;
+            PointF firstBallCenter = firstBall.Position.Add(firstBall.Velocity);
             float firstBallRadians = (firstBall.Size.Width / 2);
 
-            PointF secondBallCenter = secondBall.Position;
+            PointF secondBallCenter = secondBall.Position.Add(secondBall.Velocity);
             float secondBallRadians = (secondBall.Size.Width / 2);
 
             float tempDistance = (float)Math.Sqrt(
