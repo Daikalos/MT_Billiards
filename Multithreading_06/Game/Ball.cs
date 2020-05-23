@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Drawing;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Windows.Forms;
-using System.Drawing;
 
 namespace Multithreading_06
 {
-    class Ball
+    internal class Ball
     {
         private Panel myPnlGame;
 
@@ -20,19 +15,19 @@ namespace Multithreading_06
         private Size mySize;
 
         private Color myColor;
-        private Color myColorNormal;
-        private Color myColorSelect;
+        private Color myColorNormal;      //Normal color when not selected
+        private Color myColorSelect;      //Color when selected
 
-        private bool myIsSelected;
-        private bool myIsCollisionBall;
-        private bool myIsCollisionCue;
+        private bool myIsSelected;        //If ball is selected by user
+        private bool myIsCollisionBall;   //Make sure the ball can only collide with other ball once at collision
+        private bool myIsCollisionCue;    //If this ball is hit by a cue
 
         private float mySpeed;
-        private float myDamping;
-        private float myVelocityMin;
-        private float myInitialDistance;
+        private float myDamping;          //How fast the ball slows down after colliding with sides or other ball
+        private float myVelocityMin;      //Minimum velocity before velocity zeroes out
+        private float myInitialDistance;  //Distance to destination when hit by cue
 
-        public Rectangle DestinationRect => new Rectangle((int)Position.X - (Size.Width / 2), (int)Position.Y - (Size.Height / 2), Size.Width, Size.Height);
+        public Rectangle DrawRect => new Rectangle((int)Position.X - (Size.Width / 2), (int)Position.Y - (Size.Height / 2), Size.Width, Size.Height);
         public PointF Position => myPosition;
         public PointF Velocity { get => myVelocity; set => myVelocity = value; }
         public Size Size => mySize;
@@ -64,7 +59,7 @@ namespace Multithreading_06
 
         public async Task Move()
         {
-            await Task.Run(() => 
+            await Task.Run(() =>
             {
                 if (myIsCollisionCue)
                 {
@@ -120,7 +115,6 @@ namespace Multithreading_06
 
             myDestination = direction.MultiplyValue(Extensions.Length(destination.Subtract(myPosition)).Clamp(0f, myPnlGame.Width / 2)).Add(myPosition);
             myInitialDistance = Extensions.Length(myDestination.Subtract(myPosition));
-
 
             myVelocity = direction.MultiplyValue(mySpeed);
             myMaxVelocity = myVelocity;

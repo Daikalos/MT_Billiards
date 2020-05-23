@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace Multithreading_06
 {
@@ -61,7 +55,7 @@ namespace Multithreading_06
                 for (int i = myGame.Balls.Count - 1; i >= 0; i--)
                 {
                     Ball currentBall = myGame.Balls[i];
-                    e.Graphics.FillEllipse(new SolidBrush(currentBall.Color), currentBall.DestinationRect);
+                    e.Graphics.FillEllipse(new SolidBrush(currentBall.Color), currentBall.DrawRect);
                 }
 
                 if (myGame.IsMarked)

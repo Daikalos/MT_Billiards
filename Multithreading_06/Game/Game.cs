@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Windows.Forms;
+﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Multithreading_06
 {
-    class Game : ThreadObject
+    internal class Game : ThreadObject
     {
         private readonly List<Ball> myBalls;
         private readonly List<Hole> myHoles;
@@ -22,6 +20,7 @@ namespace Multithreading_06
         private bool myIsMarked;
 
         private float myBallSpeed;
+        private int myBallSize;
 
         private int myBallCount;
         private int myPoints;
@@ -46,6 +45,7 @@ namespace Multithreading_06
             myIsMarked = false;
 
             myBallSpeed = 30.0f;
+            myBallSize = 32;
 
             myPoints = 0;
             myHitsLeft = ballCount + 2;
@@ -198,13 +198,14 @@ namespace Multithreading_06
             for (int i = 0; i < myBallCount;)
             {
                 PointF spawnPos = new PointF(
-                        16 + StaticRandom.RandomNumber(0, myPnlGame.Width - 32),
-                        16 + StaticRandom.RandomNumber(0, myPnlGame.Height - 32));
+                        (myBallSize / 2) + StaticRandom.RandomNumber(0, myPnlGame.Width - myBallSize),
+                        (myBallSize / 2) + StaticRandom.RandomNumber(0, myPnlGame.Height - myBallSize));
 
                 bool canSpawn = true;
                 for (int j = 0; j < myBalls.Count; j++)
                 {
-                    if (Extensions.Length(spawnPos.Subtract(myBalls[j].Position)) < 32)
+                    //only spawn a ball at a position that is not colliding with any other ball
+                    if (Extensions.Length(spawnPos.Subtract(myBalls[j].Position)) < myBallSize)
                     {
                         canSpawn = false;
                     }
@@ -212,11 +213,11 @@ namespace Multithreading_06
 
                 if (canSpawn)
                 {
-                    myBalls.Add(new Ball(myPnlGame, spawnPos, new Size(32, 32), myBallSpeed));
+                    myBalls.Add(new Ball(myPnlGame, spawnPos, new Size(myBallSize, myBallSize), myBallSpeed));
                     i++;
                 }
             }
-        }     
+        }
         private void AddHoles()
         {
             for (int i = 0; i < 6; i++)
@@ -264,7 +265,7 @@ namespace Multithreading_06
 
             if (myGameStates.GameState == GameState.GameOver || myGameStates.GameState == GameState.GameWin)
             {
-                Thread.Sleep(3000);
+                Thread.Sleep(5000);
 
                 myGameStates.SetState(GameState.GameIdle);
                 IsRunning = false;

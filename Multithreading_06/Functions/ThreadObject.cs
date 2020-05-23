@@ -2,7 +2,7 @@
 
 namespace Multithreading_06
 {
-    abstract class ThreadObject
+    internal abstract class ThreadObject
     {
         public Thread MyThread { get; private set; }
         public bool IsRunning { get; set; }

@@ -2,7 +2,7 @@
 
 namespace Multithreading_06
 {
-    static class StaticRandom
+    internal static class StaticRandom
     {
         private static readonly Random myRandom = new Random();
         private static readonly object mySyncLock = new object();

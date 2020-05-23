@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace Multithreading_06
 {
-    static class Extensions
+    internal static class Extensions
     {
         public static void InvokeIfRequired(this Control control, MethodInvoker action)
         {
