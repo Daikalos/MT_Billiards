@@ -23,7 +23,8 @@ namespace Multithreading_06
         private bool myIsCollisionCue;    //If this ball is hit by a cue
 
         private float mySpeed;
-        private float myDamping;          //How fast the ball slows down after colliding with sides or other ball
+        private float myDampingNormal;    //How fast the ball slows down after colliding with sides or other ball
+        private float myDampingCue;       //Used to make sure dampSpeed only becomes smaller in the direction it is heading
         private float myVelocityMin;      //Minimum velocity before velocity zeroes out
         private float myInitialDistance;  //Distance to destination when hit by cue
 
@@ -48,7 +49,7 @@ namespace Multithreading_06
             myIsCollisionBall = false;
             myIsCollisionCue = false;
 
-            myDamping = 0.95f;
+            myDampingNormal = 0.975f;
             myVelocityMin = 0.1f;
 
             myColor = AssignRandomColor();
@@ -57,18 +58,23 @@ namespace Multithreading_06
             myColorSelect = Color.White;
         }
 
-        public async Task Move()
+        public Task Move()
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
+                //Two types of movement
                 if (myIsCollisionCue)
                 {
+                    //If ball is hit by cue, go to the point that was marked
                     float dampSpeed = (1.0f - (myInitialDistance - Extensions.Length(myDestination.Subtract(myPosition))) / myInitialDistance);
-                    myVelocity = (Extensions.Length(myVelocity) > myVelocityMin) ? myMaxVelocity.MultiplyValue(dampSpeed) : PointF.Empty;
+                    myDampingCue = (Extensions.Length(myMaxVelocity) * dampSpeed <= Extensions.Length(myVelocity)) ? dampSpeed : myDampingCue;
+
+                    myVelocity = (Extensions.Length(myVelocity) > myVelocityMin) ? myMaxVelocity.MultiplyValue(myDampingCue) : PointF.Empty;
                 }
                 else
                 {
-                    myVelocity = (Extensions.Length(myVelocity) > myVelocityMin) ? myVelocity.MultiplyValue(myDamping) : PointF.Empty;
+                    //If the ball has collided with any ball or edge, slow down velocity with damping
+                    myVelocity = (Extensions.Length(myVelocity) > myVelocityMin) ? myVelocity.MultiplyValue(myDampingNormal) : PointF.Empty;
                 }
 
                 myPosition = myPosition.Add(myVelocity);

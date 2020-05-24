@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,8 @@ namespace Multithreading_06
         private Ball mySelectedBall;
         private GameStates myGameStates;
 
+        private int myFramesPerSeconds;
+
         private Point myMarkPos;
         private bool myIsMarked;
 
@@ -27,7 +30,6 @@ namespace Multithreading_06
         private int myHitsLeft;
 
         public List<Ball> Balls => myBalls;
-        public List<Hole> Holes => myHoles;
 
         public Point MarkPos => myMarkPos;
         public bool IsMarked => myIsMarked;
@@ -41,10 +43,12 @@ namespace Multithreading_06
             myBalls = new List<Ball>();
             myHoles = new List<Hole>();
 
+            myFramesPerSeconds = (int)((1.0f / 60.0f) * 1000); //60FPS
+
             myMarkPos = Point.Empty;
             myIsMarked = false;
 
-            myBallSpeed = 30.0f;
+            myBallSpeed = 20.0f;
             myBallSize = 32;
 
             myPoints = 0;
@@ -61,13 +65,13 @@ namespace Multithreading_06
         /// <summary>
         /// Game controls the underlying update frequency of the game-logic
         /// </summary>
-        public override async void Update()
+        public override void Update()
         {
             while (IsRunning)
             {
-                Thread.Sleep((int)((1.0f / 30.0f) * 1000));
+                Thread.Sleep(myFramesPerSeconds);
 
-                await Task.WhenAll(myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon).Select(b => b.Move()).ToArray());
+                Task.WhenAll(myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon).Select(b => b.Move()).ToArray());
 
                 for (int i = myBalls.Count - 1; i >= 0; i--)
                 {
