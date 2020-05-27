@@ -52,12 +52,15 @@ namespace Multithreading_06
             myBallSize = 32;
 
             myPoints = 0;
-            myHitsLeft = ballCount + 2;
+            myHitsLeft = ballCount + 4;
 
             myGameStates.SetState(GameState.GameWaiting);
 
             AddBalls();
             AddHoles();
+
+            ThreadPool.SetMinThreads(0, 0);
+            ThreadPool.SetMaxThreads(200, 200);
 
             StartThread();
         }
@@ -71,23 +74,14 @@ namespace Multithreading_06
             {
                 Thread.Sleep(myFramesPerSeconds);
 
-                Task.WhenAll(myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon).Select(b => b.Move()).ToArray());
+                //Only update the balls that are currently moving
+                List<Ball> updateBalls = myBalls.FindAll(b => Extensions.Length(b.Velocity) > float.Epsilon);
 
-                for (int i = myBalls.Count - 1; i >= 0; i--)
-                {
-                    myBalls[i].WallCollision();
-                    for (int j = i - 1; j >= 0; j--)
-                    {
-                        BallCollision(myBalls[i], myBalls[j]);
-                    }
-                    for (int j = 0; j < myHoles.Count; j++)
-                    {
-                        if (HoleCollision(myBalls[i], myHoles[j]))
-                        {
-                            break;
-                        }
-                    }
-                }
+                Task.WaitAll(updateBalls.Select(b => b.Move()).ToArray());
+                updateBalls.ForEach(b => b.WallCollision());
+
+                HoleCollision(updateBalls);
+                BallCollision(updateBalls);
 
                 myPnlGame.InvokeIfRequired(() =>
                 {
@@ -104,97 +98,117 @@ namespace Multithreading_06
             ClearGame();
         }
 
-        public void SelectBall(Point mousePosition)
+        public Task SelectBall(Point mousePosition)
         {
-            for (int i = myBalls.Count - 1; i >= 0; i--)
+            return Task.Run(() =>
             {
-                myBalls[i].IsSelected = Extensions.WithinBall(myBalls[i], mousePosition);
-            }
-
-            for (int i = myBalls.Count - 1; i >= 0; i--)
-            {
-                if (Extensions.WithinBall(myBalls[i], mousePosition))
+                for (int i = myBalls.Count - 1; i >= 0; i--)
                 {
-                    if (mySelectedBall != myBalls[i])
+                    myBalls[i].IsSelected = Extensions.WithinBall(myBalls[i], mousePosition);
+                }
+
+                for (int i = myBalls.Count - 1; i >= 0; i--)
+                {
+                    if (Extensions.WithinBall(myBalls[i], mousePosition))
                     {
-                        if (mySelectedBall != null)
+                        if (mySelectedBall != myBalls[i])
                         {
+                            if (mySelectedBall != null)
+                            {
+                                mySelectedBall.SetColor();
+                            }
+
+                            mySelectedBall = myBalls[i];
                             mySelectedBall.SetColor();
                         }
-
-                        mySelectedBall = myBalls[i];
-                        mySelectedBall.SetColor();
                     }
                 }
-            }
+            });
         }
-        public void MarkDirection(Point mousePosition)
+        public Task MarkDirection(Point mousePosition)
         {
-            if (mySelectedBall != null)
+            return Task.Run(() =>
             {
-                if (!Extensions.WithinBall(mySelectedBall, mousePosition))
+                if (mySelectedBall != null)
                 {
-                    myMarkPos = mousePosition;
-                    myIsMarked = true;
-                }
-            }
-        }
-        public void BilliardCueHit()
-        {
-            if (mySelectedBall != null)
-            {
-                if (!Extensions.WithinBall(mySelectedBall, myMarkPos))
-                {
-                    if (myIsMarked && myGameStates.GameState == GameState.GameWaiting)
+                    if (!Extensions.WithinBall(mySelectedBall, mousePosition))
                     {
-                        myHitsLeft--;
-                        mySelectedBall.CueHitBall(myMarkPos);
+                        myMarkPos = mousePosition;
+                        myIsMarked = true;
+                    }
+                }
+            });
+        }
+        public Task BilliardCueHit()
+        {
+            return Task.Run(() =>
+            {
+                if (mySelectedBall != null)
+                {
+                    if (!Extensions.WithinBall(mySelectedBall, myMarkPos))
+                    {
+                        if (myIsMarked && myGameStates.GameState == GameState.GameWaiting)
+                        {
+                            myHitsLeft--;
+                            mySelectedBall.CueHitBall(myMarkPos);
 
-                        myMarkPos = Point.Empty;
-                        myIsMarked = false;
+                            myMarkPos = Point.Empty;
+                            myIsMarked = false;
+                        }
+                    }
+                }
+            });
+        }
+
+        private void BallCollision(List<Ball> movingBalls)
+        {
+            for (int i = movingBalls.Count - 1; i >= 0; i--)
+            {
+                for (int j = myBalls.Count - 1; j >= 0; j--)
+                {
+                    if (movingBalls[i] != myBalls[j])
+                    {
+                        if (Extensions.CheckBallCollision(movingBalls[i], myBalls[j]) && (!movingBalls[i].IsCollisionBall && !myBalls[j].IsCollisionBall))
+                        {
+                            PointF dirFirstToSecond = movingBalls[i].Position.Subtract(myBalls[j].Position).Normalize();
+                            PointF dirSecondToFirst = myBalls[j].Position.Subtract(movingBalls[i].Position).Normalize();
+
+                            PointF velFirstToSecond = dirFirstToSecond.MultiplyValue(Extensions.Length(myBalls[j].Velocity));
+                            PointF velSecondToFirst = dirSecondToFirst.MultiplyValue(Extensions.Length(movingBalls[i].Velocity));
+
+                            movingBalls[i].Velocity = velFirstToSecond;
+                            myBalls[j].Velocity = velSecondToFirst;
+
+                            movingBalls[i].IsCollisionBall = true;
+                            myBalls[j].IsCollisionBall = true;
+
+                            movingBalls[i].IsCollisionCue = false;
+                            myBalls[j].IsCollisionCue = false;
+                        }
+                        if (!Extensions.CheckBallCollision(movingBalls[i], myBalls[j]) && (movingBalls[i].IsCollisionBall && myBalls[j].IsCollisionBall))
+                        {
+                            movingBalls[i].IsCollisionBall = false;
+                            myBalls[j].IsCollisionBall = false;
+                        }
                     }
                 }
             }
         }
-
-        private void BallCollision(Ball firstBall, Ball secondBall)
+        private void HoleCollision(List<Ball> movingBalls)
         {
-            if (firstBall != secondBall)
+            for (int i = movingBalls.Count - 1; i >= 0; i--)
             {
-                if (Extensions.CheckBallCollision(firstBall, secondBall) && (!firstBall.IsCollisionBall && !secondBall.IsCollisionBall))
+                for (int j = 0; j < myHoles.Count; j++)
                 {
-                    PointF dirFirstToSecond = firstBall.Position.Subtract(secondBall.Position).Normalize();
-                    PointF dirSecondToFirst = secondBall.Position.Subtract(firstBall.Position).Normalize();
+                    if (Extensions.CheckHoleCollision(movingBalls[i], myHoles[j]))
+                    {
+                        myPoints++;
+                        myBalls.Remove(movingBalls[i]);
 
-                    PointF velFirstToSecond = dirFirstToSecond.MultiplyValue(Extensions.Length(secondBall.Velocity));
-                    PointF velSecondToFirst = dirSecondToFirst.MultiplyValue(Extensions.Length(firstBall.Velocity));
-
-                    firstBall.Velocity = velFirstToSecond;
-                    secondBall.Velocity = velSecondToFirst;
-
-                    firstBall.IsCollisionBall = true;
-                    secondBall.IsCollisionBall = true;
-
-                    firstBall.IsCollisionCue = false;
-                    secondBall.IsCollisionCue = false;
-                }
-                if (!Extensions.CheckBallCollision(firstBall, secondBall) && (firstBall.IsCollisionBall && secondBall.IsCollisionBall))
-                {
-                    firstBall.IsCollisionBall = false;
-                    secondBall.IsCollisionBall = false;
+                        break;
+                    }
                 }
             }
-        }
-        private bool HoleCollision(Ball ball, Hole hole)
-        {
-            if (Extensions.CheckHoleCollision(ball, hole))
-            {
-                myPoints++;
-                myBalls.Remove(ball);
-
-                return true;
-            }
-            return false;
         }
 
         private void AddBalls()

@@ -67,21 +67,21 @@ namespace Multithreading_06
             }
         }
 
-        private void PnlGame_MouseClick(object sender, MouseEventArgs e)
+        private async void PnlGame_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                myGame.SelectBall(PnlGame.PointToClient(Cursor.Position));
+                await myGame.SelectBall(PnlGame.PointToClient(Cursor.Position));
             }
             if (e.Button == MouseButtons.Right)
             {
-                myGame.MarkDirection(PnlGame.PointToClient(Cursor.Position));
+                await myGame.MarkDirection(PnlGame.PointToClient(Cursor.Position));
             }
         }
 
-        private void PnlGame_MouseDoubleClick(object sender, MouseEventArgs e)
+        private async void PnlGame_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            myGame.BilliardCueHit();
+            await myGame.BilliardCueHit();
         }
 
         public void UpdateGameStateText(string gameState)
