@@ -14,30 +14,29 @@ namespace Multithreading_06
         private readonly List<Hole> myHoles;
 
         private Panel myPnlGame;
-        private Ball mySelectedBall;
-        private GameStates myGameStates;
+        private Ball mySelectedBall;     //Current selected ball for the cue to hit
+        private GameStates myGameStates; //Check current state of the game
 
         private int myFramesPerSeconds;
 
-        private Point myMarkPos;
-        private bool myIsMarked;
+        private Point myMarkPos;         //Marked position for the direction the ball should go when hit by cue  
+        private bool myIsMarked;         //If there player has marked a position
 
-        private float myBallSpeed;
-        private int myBallSize;
+        private float myBallSpeed;       //Speed of the ball when moving
+        private int myBallCount;         //Amount of balls to the table
+        private int myBallSize;          //Size of the ball
 
-        private int myBallCount;
-        private int myPoints;
-        private int myHitsLeft;
+        private int myPoints;            //Total amount of balls who reached goal
+        private int myHitsLeft;          //Amount of tries player has before losing
 
         public List<Ball> Balls => myBalls;
 
         public Point MarkPos => myMarkPos;
         public bool IsMarked => myIsMarked;
 
-        public Game(Panel pnlGame, GameStates gameStates, int ballCount)
+        public Game(Panel pnlGame, GameStates gameStates)
         {
             this.myPnlGame = pnlGame;
-            this.myBallCount = ballCount;
             this.myGameStates = gameStates;
 
             myBalls = new List<Ball>();
@@ -49,16 +48,18 @@ namespace Multithreading_06
             myIsMarked = false;
 
             myBallSpeed = 20.0f;
+            myBallCount = 8;
             myBallSize = 32;
 
             myPoints = 0;
-            myHitsLeft = ballCount + 4;
+            myHitsLeft = myBallCount + 4;
 
             myGameStates.SetState(GameState.GameWaiting);
 
             AddBalls();
             AddHoles();
 
+            //Set reasonable min/max threads
             ThreadPool.SetMinThreads(0, 0);
             ThreadPool.SetMaxThreads(200, 200);
 
@@ -104,20 +105,25 @@ namespace Multithreading_06
             {
                 for (int i = myBalls.Count - 1; i >= 0; i--)
                 {
+                    //Update status for each ball, of which is selected or not, used for assigning correct color
                     myBalls[i].IsSelected = Extensions.WithinBall(myBalls[i], mousePosition);
                 }
 
                 for (int i = myBalls.Count - 1; i >= 0; i--)
                 {
+                    //If the current selected position hits a ball
                     if (Extensions.WithinBall(myBalls[i], mousePosition))
                     {
+                        //If the current selected ball is not equal to this new ball
                         if (mySelectedBall != myBalls[i])
                         {
+                            //If there already is a selected ball, reset its color
                             if (mySelectedBall != null)
                             {
                                 mySelectedBall.SetColor();
                             }
 
+                            //Assign new selected ball
                             mySelectedBall = myBalls[i];
                             mySelectedBall.SetColor();
                         }
@@ -129,8 +135,10 @@ namespace Multithreading_06
         {
             return Task.Run(() =>
             {
+                //Can only mark a position if there is a selected ball
                 if (mySelectedBall != null)
                 {
+                    //If the current marked position is not inside the current selected ball
                     if (!Extensions.WithinBall(mySelectedBall, mousePosition))
                     {
                         myMarkPos = mousePosition;
@@ -143,10 +151,13 @@ namespace Multithreading_06
         {
             return Task.Run(() =>
             {
+                //If there is a selected ball
                 if (mySelectedBall != null)
                 {
+                    //If the current marked location is not inside the current selected ball
                     if (!Extensions.WithinBall(mySelectedBall, myMarkPos))
                     {
+                        //If there is a marked location and the game is currently waiting for user input
                         if (myIsMarked && myGameStates.GameState == GameState.GameWaiting)
                         {
                             myHitsLeft--;
@@ -170,12 +181,15 @@ namespace Multithreading_06
                     {
                         if (Extensions.CheckBallCollision(movingBalls[i], myBalls[j]) && (!movingBalls[i].IsCollisionBall && !myBalls[j].IsCollisionBall))
                         {
+                            //Get direction between eachother
                             PointF dirFirstToSecond = movingBalls[i].Position.Subtract(myBalls[j].Position).Normalize();
                             PointF dirSecondToFirst = myBalls[j].Position.Subtract(movingBalls[i].Position).Normalize();
 
+                            //Multiply swapped velocity to direction
                             PointF velFirstToSecond = dirFirstToSecond.MultiplyValue(Extensions.Length(myBalls[j].Velocity));
                             PointF velSecondToFirst = dirSecondToFirst.MultiplyValue(Extensions.Length(movingBalls[i].Velocity));
 
+                            //Apply velocity
                             movingBalls[i].Velocity = velFirstToSecond;
                             myBalls[j].Velocity = velSecondToFirst;
 
@@ -200,6 +214,7 @@ namespace Multithreading_06
             {
                 for (int j = 0; j < myHoles.Count; j++)
                 {
+                    //If there is a collision with any hole
                     if (Extensions.CheckHoleCollision(movingBalls[i], myHoles[j]))
                     {
                         myPoints++;
@@ -259,39 +274,51 @@ namespace Multithreading_06
 
         private void StateCheck()
         {
-            if (myBalls.Any(b => Extensions.Length(b.Velocity) > float.Epsilon))
+            if (IsRunning)
             {
-                myGameStates.SetState(GameState.GameActive);
-            }
-            else
-            {
-                myGameStates.SetState(GameState.GameWaiting);
-            }
-
-            if (myGameStates.GameState == GameState.GameWaiting)
-            {
-                if (myBalls.Count == 0)
+                //If there is any ball moving, the game is active, otherwise, waiting
+                if (myBalls.Any(b => Extensions.Length(b.Velocity) > float.Epsilon))
                 {
-                    myGameStates.SetState(GameState.GameWin);
+                    myGameStates.SetState(GameState.GameActive);
+                }
+                else
+                {
+                    myGameStates.SetState(GameState.GameWaiting);
                 }
 
-                if (myHitsLeft <= 0)
+                //Check the end state when there is no ball moving
+                if (myGameStates.GameState == GameState.GameWaiting)
                 {
-                    myGameStates.SetState(GameState.GameOver);
+                    //If there are no more balls on plane, the player has won
+                    if (myBalls.Count == 0)
+                    {
+                        myGameStates.SetState(GameState.GameWin);
+                    }
+
+                    //If the player has no more attempts left and there is still balls, game over
+                    if (myBalls.Count > 0 && myHitsLeft <= 0)
+                    {
+                        myGameStates.SetState(GameState.GameOver);
+                    }
                 }
-            }
 
-            if (myGameStates.GameState == GameState.GameOver || myGameStates.GameState == GameState.GameWin)
-            {
-                Thread.Sleep(5000);
+                //If the end state has been determined, sleep 5 seconds, then reset game
+                if (myGameStates.GameState == GameState.GameOver || myGameStates.GameState == GameState.GameWin)
+                {
+                    Thread.Sleep(5000);
 
-                myGameStates.SetState(GameState.GameIdle);
-                IsRunning = false;
+                    myGameStates.SetState(GameState.GameIdle);
+                    IsRunning = false;
+                }
             }
         }
         private void ClearGame()
         {
+            myMarkPos = Point.Empty;
+            myIsMarked = false;
+
             myBalls.Clear();
+
             myPnlGame.InvokeIfRequired(() =>
             {
                 //Refresh panel to show latest update

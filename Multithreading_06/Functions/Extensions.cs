@@ -29,7 +29,7 @@ namespace Multithreading_06
             return (distance > 1.0f) ? new PointF(point.X / distance, point.Y / distance) : PointF.Empty;
         }
 
-        public static PointF Multiply(this PointF point, Point pointToMultiplyBy)
+        public static PointF Multiply(this PointF point, PointF pointToMultiplyBy)
         {
             return new PointF(point.X * pointToMultiplyBy.X, point.Y * pointToMultiplyBy.Y);
         }

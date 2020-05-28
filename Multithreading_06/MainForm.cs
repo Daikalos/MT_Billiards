@@ -25,7 +25,7 @@ namespace Multithreading_06
 
         private void BtnStart_Click(object sender, EventArgs e)
         {
-            myGame = new Game(PnlGame, myGameStates, 8);
+            myGame = new Game(PnlGame, myGameStates);
 
             BtnStart.Enabled = false;
             BtnStop.Enabled = true;
@@ -34,6 +34,7 @@ namespace Multithreading_06
         private void BtnStop_Click(object sender, EventArgs e)
         {
             myGame.IsRunning = false;
+            myGameStates.SetState(GameState.GameIdle);
 
             BtnStart.Enabled = true;
             BtnStop.Enabled = false;
@@ -43,6 +44,9 @@ namespace Multithreading_06
         {
             PnlGame.InvokeIfRequired(() =>
             {
+                LblPoints.Text = "0";
+                LblHits.Text = "0";
+
                 BtnStart.Enabled = true;
                 BtnStop.Enabled = false;
             });
@@ -52,12 +56,14 @@ namespace Multithreading_06
         {
             if (myGame != null)
             {
+                //Draw each ball on billiard table
                 for (int i = myGame.Balls.Count - 1; i >= 0; i--)
                 {
                     Ball currentBall = myGame.Balls[i];
                     e.Graphics.FillEllipse(new SolidBrush(currentBall.Color), currentBall.DrawRect);
                 }
 
+                //If the player has marked a position,
                 if (myGame.IsMarked)
                 {
                     e.Graphics.FillEllipse(new SolidBrush(Color.Black), new Rectangle(

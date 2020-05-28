@@ -20,7 +20,7 @@ namespace Multithreading_06
 
         private bool myIsSelected;        //If ball is selected by user
         private bool myIsCollisionBall;   //Make sure the ball can only collide with other ball once at collision
-        private bool myIsCollisionCue;    //If this ball is hit by a cue
+        private bool myIsCollisionCue;    //If this ball is hit by a cue or not
 
         private float mySpeed;
         private float myDampingNormal;    //How fast the ball slows down after colliding with sides or other ball
@@ -117,8 +117,10 @@ namespace Multithreading_06
         {
             myIsCollisionCue = true;
 
+            //Current direction to destination
             PointF direction = destination.Subtract(myPosition).Normalize();
 
+            //Limit the distance the ball can go by half the board size in width
             myDestination = direction.MultiplyValue(Extensions.Length(destination.Subtract(myPosition)).Clamp(0f, myPnlGame.Width / 2)).Add(myPosition);
             myInitialDistance = Extensions.Length(myDestination.Subtract(myPosition));
 
