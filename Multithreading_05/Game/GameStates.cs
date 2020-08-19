@@ -1,4 +1,4 @@
-﻿namespace Multithreading_06
+﻿namespace Multithreading_05
 {
     public enum GameState
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Multithreading_06
+namespace Multithreading_05
 {
     internal abstract class ThreadObject
     {

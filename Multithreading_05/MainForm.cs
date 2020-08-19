@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace Multithreading_06
+namespace Multithreading_05
 {
     public partial class MainForm : Form
     {

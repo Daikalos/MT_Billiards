@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Multithreading_06
+namespace Multithreading_05
 {
     internal class Game : ThreadObject
     {

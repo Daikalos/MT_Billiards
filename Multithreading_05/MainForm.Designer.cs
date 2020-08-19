@@ -1,4 +1,4 @@
-﻿namespace Multithreading_06
+﻿namespace Multithreading_05
 {
     partial class MainForm
     {
@@ -42,7 +42,7 @@
             // 
             // PnlBilliardTable
             // 
-            this.PnlBilliardTable.BackgroundImage = global::Multithreading_06.Properties.Resources.billiardTable;
+            this.PnlBilliardTable.BackgroundImage = Properties.Resources.billiardTable;
             this.PnlBilliardTable.Controls.Add(this.PnlGame);
             this.PnlBilliardTable.Location = new System.Drawing.Point(0, 36);
             this.PnlBilliardTable.Name = "PnlBilliardTable";
@@ -157,7 +157,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.KeyPreview = true;
             this.Name = "MainForm";
-            this.Text = "Multithreading_06";
+            this.Text = "Multithreading_05";
             this.PnlBilliardTable.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

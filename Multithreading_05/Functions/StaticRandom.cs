@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Multithreading_06
+namespace Multithreading_05
 {
     internal static class StaticRandom
     {

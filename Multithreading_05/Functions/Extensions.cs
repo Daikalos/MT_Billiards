@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Multithreading_06
+namespace Multithreading_05
 {
     internal static class Extensions
     {
